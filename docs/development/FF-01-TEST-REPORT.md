@@ -1,8 +1,13 @@
 # FF-01 Test Report
 
-Status: **PENDING — target-machine validation required**. The 2026-09-25 FF-02 sandbox has no Arch/Hyprland/Wayland/NVIDIA display or Rust toolchain. No FF-01 acceptance item was tested here.
+Status: **PARTIAL — target-machine launch observed 2026-09-25; visuals
+partially recorded, interaction items still PENDING**. GTK 4.22.5, Rust
+1.92.x-era toolchain (1.98.1 reported), Arch + Wayland (`wayland-1`) +
+Hyprland + NVIDIA. Overlay built after the `let mut signals` fix and
+launched in foreground.
 
-Code audit: the SIGINT listener in `apps/overlay-linux/src/main.rs` calls `std::process::exit(0)`. Exiting the process is not the same as graceful GTK/renderer cleanup. Verify `Ctrl+C` from the launching terminal on the actual machine; if the requirement is graceful shutdown, revise this handler in a separate FF-01 change after reproducing the issue.
+Code audit: the SIGINT listener in `apps/overlay-linux/src/main.rs` calls
+`std::process::exit(0)`. Exiting the process is not the same as graceful GTK/renderer cleanup. Verify `Ctrl+C` from the launching terminal on the actual machine; if the requirement is graceful shutdown, revise this handler in a separate FF-01 change after reproducing the issue.
 
 Run this on the actual Arch + Hyprland session. Record versions and mark every acceptance item PASS/FAIL.
 
@@ -24,18 +29,20 @@ Renderer/backend observed:
 
 | Test | Result | Notes |
 |---|---|---|
-| Transparent surface | PENDING | |
+| Launch without crash | PASS — tested | Foreground launch rendered a frame (screenshot) |
+| Debug marker position | PASS — tested | Red disc with two eyes at ~82%/72% viewport, matches `main.rs` draw func |
+| Transparent surface | FAIL — tested | Surface background is opaque black, not transparent |
 | Overlay layer | PENDING | |
 | Not tiled | PENDING | |
 | Keyboard focus unaffected | PENDING | |
 | Background pointer passthrough possible | PENDING | |
 | Avatar hit region possible | PENDING | |
 | Workspace switching | PENDING | |
-| Multi-monitor | PENDING | |
+| Multi-monitor | PENDING | single screenshot only |
 | No application interference | PENDING | |
 | 60 FPS idle target | PENDING | |
 | Hide/show cleanly | PENDING | |
-| Ctrl+C exits cleanly | PENDING | |
+| Ctrl+C exits cleanly | PENDING | process-disappearance check not yet recorded |
 
 ## Exit behavior
 

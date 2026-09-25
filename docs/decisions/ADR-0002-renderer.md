@@ -1,6 +1,12 @@
 # ADR-0002 — Character renderer and native overlay boundary
 
-Status: **PENDING — FF-02 import experiment in progress (2026-09-25)**. This is **not** a decision to ship Three.js or Godot. Keep the GTK4 layer-shell overlay and renderer separate until the target machine and the real assets provide evidence.
+Status: **DECIDED 2026-09-25 — Godot native avatar runtime** (revisit only on
+new evidence). Evidence: target headless Furina import (1 mesh, 5 materials,
+240 bones incl. Head/Neck/Eye_L/Eye_R, 60 blend shapes, 0 clips, 0 errors);
+runtime loads + idles error-free with transparent window; Three.js target
+render proven but needs an unsolved browser→layer-shell bridge. Full record:
+[RENDERER-VALIDATION.md](../development/RENDERER-VALIDATION.md). Prior
+PENDING text below is retained as history.
 
 ## Reference-project audit (inspiration, not dependencies)
 

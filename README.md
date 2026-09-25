@@ -1,22 +1,86 @@
 # Fruit-Fly
 
-Research/implementation project for a **local-first 3D desktop companion** on Arch Linux + Wayland + Hyprland. It is **not** yet an AI assistant or usable avatar. The character's personality, model, renderer and OS capabilities are separate layers; no LLM gets direct OS/shell access.
+Local-first 3D desktop companion for Arch Linux + Wayland + Hyprland.
+Working vertical slice: desktop overlay + Godot avatar runtime + character/
+behavior runtime + policy-gated capabilities + mock brain/voice/vision.
+No LLM gets direct OS/shell access — ever.
 
-## Current engineering status
+## Architecture
 
-- **FF-01:** Rust/GTK4/gtk4-layer-shell debug overlay exists. Transparency, pointer passthrough, multi-monitor, performance and terminal `Ctrl+C` behavior still need real Arch + Hyprland testing; see [FF-01 report](docs/development/FF-01-TEST-REPORT.md).
-- **FF-02:** metadata inventory and a local FBX import comparison experiment are available. Two provided FBXs parsed in a software-browser Three.js probe, but the Godot and native Wayland comparisons are pending; see [FF-02 evidence](docs/development/FF-02-MODEL-INVENTORY.md) and the undecided [renderer ADR](docs/decisions/ADR-0002-renderer.md).
-- Brain, vision, voice, memory, personality and computer control are **not operational**. The existing policy module is a stub, not a security boundary ready to drive the OS.
+Brain/Intents (HTTP, localhost) → Behavior engine → Character runtime →
+Godot avatar renderer + GTK overlay. Capability requests → allowlist policy
+with typed args → typed adapters (Hyprland). Voice/vision are mock
+interfaces; memory is session-scoped. See
+[system design](docs/architecture/system-design.md) and
+[status](docs/development/STATUS.md).
 
-## Local-only assets
+## Requirements
 
-Put licensed-for-your-use models under ignored `characters/local/`; never commit them or private screenshots. **The baseline history already contains two candidate ZIPs without verified redistribution rights**. They have been untracked without deleting local originals, but the affected *history* must be resolved before public release; see [asset ADR](docs/decisions/ADR-0003-character-assets.md). The original Goth Mommy character asset is not present in this checkout.
+Arch Linux, Wayland/Hyprland, Python 3.11+ (+pyyaml), Godot 4.7, Rust/cargo
+for the overlay, Node for the Three.js probe. NVIDIA + Firefox verified on
+target. No API keys, no network, no cloud.
 
-## Development entry points
+## Installation
 
 ```bash
-python3 scripts/smoke_test.py
-python3 -m unittest discover -s tests -p 'test_ff02_*.py' -v
+git pull
+npm ci --prefix apps/avatar-renderer/probes/ff02   # probe only
 ```
 
-See [the isolated importer instructions](apps/avatar-renderer/README.md), [overlay instructions](apps/overlay-linux/README.md) and [architecture audit](docs/architecture/system-design.md). Do not treat import data as proof of usable animation or a correct-looking avatar.
+Licensed character assets go under ignored `characters/local/` (never
+committed). Furina layout: `characters/local/Furina/source/*.fbx` +
+`characters/local/Furina/textures/*.png`. Baseline git history still
+contains two unlicensed ZIPs — resolve before public release
+([ADR-0003](docs/decisions/ADR-0003-character-assets.md)).
+
+## Running
+
+```bash
+./Run.sh --dev     # one-command slice: brain + mock events + headless avatar
+./Run.sh --check   # offline verification (tests + smoke)
+./Run.sh --overlay # FF-01 overlay in foreground (Ctrl+C stops it)
+./Run.sh --probe   # Three.js probe server (import in Firefox manually)
+./Run.sh --validate# FF-02C target validation harness
+```
+
+Godot editor visual check:
+`godot --editor --path apps/avatar-renderer/runtime` (manual observation).
+
+## Development mode
+
+`--dev` uses scripted events and mock providers; swapping in real STT/TTS/
+vision means implementing `VoiceProvider`/`VisionProvider` interfaces in
+`packages/perception/providers.py` — no architecture change.
+
+## Character assets
+
+Swap characters via YAML (`characters/*.yaml`): furina, columbina,
+goth-mommy (personality config, no model yet). Runtime never imports a
+renderer; renderer reads character data + procedural-idle parameters.
+
+## Security model
+
+Allowlisted capabilities with typed arguments and confirmation gates
+(`packages/capability_policy/`); denied intents never reach adapters;
+localhost-only HTTP; details in
+[COMPUTER_CONTROL.md](docs/security/COMPUTER_CONTROL.md).
+
+## Testing
+
+```bash
+python3 -m unittest discover -s tests -v   # 53 tests, all must pass
+```
+
+GUI/visual claims stay PENDING without human observation.
+
+## Known limitations
+
+Furina has 0 imported clips (procedural idle fallback active); texture
+filename refs 3/3 unresolved but Firefox render looked usable; brain HTTP
+has no auth; overlay visuals + Ctrl+C re-verify pending.
+
+## Future work
+
+Real STT/TTS, camera inference, persistent memory, overlay↔Godot window
+compositing, FPS/VRAM budgets, renderer decision revisit only on new
+evidence.
