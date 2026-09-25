@@ -6,6 +6,10 @@ configs/local/**
 /model-inventory.json
 apps/avatar-renderer/probes/godot-ff02/local/**
 apps/avatar-renderer/probes/godot-ff02/.godot/**
+apps/avatar-renderer/probes/godot-ff02/*.uid
+apps/avatar-renderer/runtime/local/**
+apps/avatar-renderer/runtime/.godot/**
+apps/avatar-renderer/runtime/*.uid
 *.fbx
 *.vrm
 *.vrma
@@ -30,3 +34,4 @@ out/
 *.log
 .vscode/
 .idea/
+artifacts/ff02c/
