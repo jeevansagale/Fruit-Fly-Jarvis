@@ -43,9 +43,13 @@ def inspect_file(path: Path, root: Path) -> dict:
         "renderer_metadata": {
             "has_animation_data": "unknown",
             "has_skeleton": "unknown",
+            "has_humanoid_rig": "unknown",
             "has_morph_targets": "unknown",
             "has_materials": "unknown",
             "has_textures": "unknown",
+            "has_expressions": "unknown",
+            "has_eye_look_at": "unknown",
+            "has_physics": "unknown",
             "notes": [],
         },
     }

@@ -1,7 +1,52 @@
-# ADR-0002 — Renderer
+# ADR-0002 — Character renderer and native overlay boundary
 
-Status: **PENDING**
+Status: **PENDING — FF-02 import experiment in progress (2026-09-25)**. This is **not** a decision to ship Three.js or Godot. Keep the GTK4 layer-shell overlay and renderer separate until the target machine and the real assets provide evidence.
 
-Candidates: Three.js/WebGL and Godot 4.
+## Reference-project audit (inspiration, not dependencies)
 
-Choose from actual character-model compatibility, animation/expression access, GPU performance, packaging, and integration with the validated overlay boundary.
+| Source | What it actually does / useful idea | Not transferable; license and reuse boundary |
+|---|---|---|
+| [TuragaLab/flybody](https://github.com/TuragaLab/flybody) | Anatomically detailed *fly* body and MuJoCo walking/flight/RL environments. Useful example of separating simulation, body and controller. | Not a humanoid avatar importer, Wayland overlay, or conversational AI. Apache-2.0 repository code is potentially reusable **with notices**, but brings MuJoCo/ML cost and does not license our character models. **Inspiration only.** |
+| [cobanov/awesome-fly](https://github.com/cobanov/awesome-fly) | Curated index of connectome projects; useful discovery/provenance checklist. | Not a library, brain, or desktop runtime. The list is CC0; *linked* projects and the promoted template have their **own** terms (template requires linked credit). **Research source, not dependency.** |
+| [DenisSergeevitch/desktop-fly](https://github.com/DenisSergeevitch/desktop-fly) | macOS Swift desktop fly with procedural body, sensed desktop environment and neural simulation; separate Windows Electron/Three port. Its body/behavior boundary and provenance-vs-assumption discipline are useful. | Neither port supplies a Hyprland layer-shell humanoid importer. Code MIT; bundled FlyWire-derived data CC BY-NC 4.0, MaleCNS-derived data CC BY 4.0. **Do not vendor data/assets.** |
+| [snedea/flybrain](https://github.com/snedea/flybrain) | Browser LIF simulation of FlyWire connectome in a worker, with a visual fly; decoupled simulation and rendering is a useful pattern. | Not an LLM, Wayland compositor adapter, or character runtime. Code MIT; connectome data has separate upstream provenance/terms. **Inspiration only.** |
+
+These are direct reviews of their READMEs, repository licenses and data notes, **not independent reproductions**. In particular, none establishes FBX rig compatibility for Fruit-Fly. [1](https://github.com/cobanov/awesome-fly) [1](https://github.com/DenisSergeevitch/desktop-fly) [1](https://github.com/snedea/flybrain)
+
+## Platform facts, not assumptions
+
+- `zwlr_layer_shell_v1` creates a **layer surface**, with overlay z-order and keyboard interactivity. Its default pointer region is the entire surface; an **empty or shaped `wl_surface.set_input_region`** is needed for passthrough/hit regions. Alpha transparency is a separate buffer/compositor property. [1](https://wayland.app/protocols/wlr-layer-shell-unstable-v1) [1](https://wayland.app/protocols/wayland)
+- Existing GTK4 + gtk4-layer-shell handles the *surface role*, not 3D rendering. Its screen-filling DrawingArea currently does **not** implement pointer masking. Hyprland/NVIDIA behavior and SIGINT shutdown are still target-machine **PENDING**. [1](https://github.com/wmww/gtk4-layer-shell)
+- A Three.js transparent WebGL canvas, or Godot's transparent Window flag, does **not** by itself create a Wayland layer surface. Godot documents Linux/Wayland window transparency but native `mouse_passthrough`/polygon only for X11/macOS/Windows, not Wayland. GTK WebView embedding, frame sharing, a compositor subsurface or a purpose-built EGL layer client would each need their **own** prototype. [2](https://threejs.org/docs/pages/WebGLRenderer.html) [1](https://docs.godotengine.org/en/stable/classes/class_window.html)
+- A native Wayland/EGL layer-shell viewer demonstrates shaped input regions, but [Waifuland](https://github.com/ayasena/Waifuland) renders **Live2D**, not our FBX/VRM characters; its upstream dependencies/asset rights need separate review. `layer-shell-preload` is explicitly an unsupported `LD_PRELOAD` hack and is **not** our integration plan. [1](https://github.com/ayasena/Waifuland) [layer-shell-preload upstream warning](https://github.com/wmww/gtk4-layer-shell/blob/main/layer_shell_preload.md)
+
+## Fruit-Fly renderer comparison (evidence as of this ADR)
+
+| Requirement | Three.js / WebGL | Godot 4 | Status / discriminator |
+|---|---|---|---|
+| 1–2. Real import; FBX | `FBXLoader` (FBX >= 7; some morph normals unsupported). Two actual FBXs parsed/drew in a **software headless browser**. Columbina has unresolved texture references. | Built-in `ufbx` default from 4.3; same files **not yet imported**. | Three **PASS** for parse/draw only; Godot **PENDING**. [1](https://threejs.org/docs/pages/FBXLoader.html) [4](https://docs.godotengine.org/en/4.4/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html) |
+| 3. VRM; 4. glTF | Core `GLTFLoader`; VRM-specific humanoid, expression/look-at/spring features need `@pixiv/three-vrm` (not installed). | Core glTF; VRM semantics need a separate community addon such as `V-Sekai/godot-vrm` (not installed). | **PENDING**, no candidate VRM/glTF here; never equate basic glTF loading with VRM behavior. [2](https://github.com/pixiv/three-vrm) [2](https://github.com/V-Sekai/godot-vrm/blob/master/README.md) |
+| 5–6. Animation; humanoid retargeting | Imported clips exposed; two current FBXs produced **0 clips**. Retargeting requires implementation/validation. | AnimationPlayer/Tree; SkeletonProfileHumanoid requires actual bone mapping and rest-pose verification. | **UNKNOWN** for cross-character animation; visible bones are not a mapped humanoid rig. [1](https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/retargeting_3d_skeletons.html) |
+| 7–9. Morphs, facial expressions, eye tracking | Imported named morphs: Columbina 47, Furina 60; UI exposes one weight at a time. Expression meaning and look-at untested. | Blend-shape/animation channels and VRM addon possible; not exercised. | **UNKNOWN** for blinking, facial quality, eye/head tracking. |
+| 10–11. Lip-sync; physics | No lip-sync or hair/clothing physics implemented; VRM spring bones would need a tested plugin. | No lip-sync; optional built-in or addon spring bones would need a tested asset. | **PENDING**, not an FBX feature implied by extension. |
+| 12–13. GPU performance; transparency | Software Chromium draw calls observed; alpha canvas works **inside browser only**. | Transparency documented with compositor/driver caveats; no import or FPS test here. | **PENDING** on NVIDIA + Hyprland; record frame time/VRAM/CPU/GPU with same asset. [1](https://docs.godotengine.org/en/stable/classes/class_window.html) |
+| 14–15. Wayland integration; overlay embedding | Browser/webview must be embedded in native layer shell or pixels transferred; not implemented. | Default Godot window is not a layer-shell surface; compositing/IPC path unverified. | **BLOCKER** for both; choose only after a same-machine overlay test. |
+| 16–18. Packaging; debugging; dev speed | Browser DevTools and small JS dependency; browser/webview packaging and isolation still work. | Editor/import inspector and native engine tooling; shipping editor/addons vs export and local asset workflow still work. | **UNKNOWN** until repeatable package/relaunch with no committed assets. |
+| 19–20. Linux coexistence; runtime-state interface | JS can receive structured state; secure local IPC and texture/surface sharing not yet designed. | GDScript can receive structured state; secure local IPC and surface sharing not yet designed. | Both remain renderers, **never** OS-capability executors or the brain. |
+
+## Technology/resource ledger (no production selection yet)
+
+| Name / purpose / why it is here | Official docs; GitHub; license | Alternative and why not selected **now** | Runtime / GPU / CPU cost; maintenance risk |
+|---|---|---|---|
+| **GTK4 + gtk4-layer-shell** — keep existing native Wayland overlay boundary, not a 3D renderer. | [GTK4](https://docs.gtk.org/gtk4/) ([source](https://gitlab.gnome.org/GNOME/gtk), LGPL-2.1-or-later); [gtk4-layer-shell API](https://wmww.github.io/gtk4-layer-shell/) ([source](https://github.com/wmww/gtk4-layer-shell), MIT). | Raw Wayland/EGL or unsupported preload: avoid rewrite or unstable hack before testing current spike. | One native UI process; renderer GPU load absent in spike, CPU/memory **not measured**. Risk: GTK surface-to-3D bridge and per-output input regions. |
+| **Three.js 0.186.1** — browser-only real-FBX import comparator; **not** the production renderer. | [FBXLoader](https://threejs.org/docs/pages/FBXLoader.html), [GLTFLoader](https://threejs.org/docs/pages/GLTFLoader.html), [WebGLRenderer](https://threejs.org/docs/pages/WebGLRenderer.html); [GitHub](https://github.com/mrdoob/three.js), MIT. | Godot not rejected; its actual importer/overlay costs still need measurement. | Browser/WebGL context and JS parse cost; **no representative GPU/CPU numbers**, software Chromium used here. Risk: FBX texture parity, no ready Wayland layer surface. |
+| **Godot 4 (4.3+)** — alternative FBX/animation import comparator. | [Formats/ufbx](https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html), [retargeting](https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/retargeting_3d_skeletons.html); [GitHub](https://github.com/godotengine/godot), MIT. | Three.js not rejected; it already parses two assets but has a texture issue. | Engine/editor process plus 3D renderer; **GPU, CPU, VRAM, binary/package cost unmeasured on target**. Risk: native Wayland layer integration and addon maintenance. |
+
+Optional VRM addons (both **MIT**, [three-vrm](https://github.com/pixiv/three-vrm), [godot-vrm](https://github.com/V-Sekai/godot-vrm/blob/master/LICENSE)) are **not recommended or installed yet**: no supplied VRM asset. They add humanoid/expression/spring-bone behavior and attendant CPU/GPU/update costs **unknown** until measured. A format's license does not license a character model; sample assets can have different rights.
+
+## Decision gate / smallest experiment
+
+1. Use **the same local FBX and textures** in the browser-side Three probe and the isolated Godot import probe; record importer versions, scene/bones/clips/morphs, missing texture paths and visual screenshots **privately**. See [FF-02 test record](../development/FF-02-MODEL-INVENTORY.md).
+2. Run visual pose, face and animation switching checks for at least one complete *original/licensable* character. A zero-clip import fails the idle/gesture requirement until an animation workflow is demonstrated.
+3. On actual Arch + Hyprland + NVIDIA, show the chosen rendered pixels on an overlay with focus/pointer passthrough, multimonitor, hide/show and a measured idle budget. Keep the existing FF-01 checklist open until tested.
+4. Only then accept an ADR choosing a renderer/bridge (or explicitly defer). No LLM, voice, memory or computer control was added as part of this decision.

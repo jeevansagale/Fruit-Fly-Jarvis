@@ -4,6 +4,8 @@ Status: **PROPOSED**
 
 Character assets are treated as local, replaceable runtime inputs rather than source-controlled application code.
 
+**2026-09-25 audit:** Two candidate ZIPs were already tracked at the repository root in the baseline commit, with no redistribution rights established by their archive contents. They have been removed from the index without deleting local originals, and new root ZIPs are ignored. **Old Git history still contains both archives; merely ignoring/untracking them does not make the repository safe to publish.** Resolve licensing and remove the affected history (or prepare a clean public history) *before* publishing/pushing this repository. Do not rewrite published history without coordinating with the owner. Local copies/staged extracts stay under ignored `characters/local/`.
+
 ## Rules
 
 1. Store local/proprietary models under `characters/local/`.

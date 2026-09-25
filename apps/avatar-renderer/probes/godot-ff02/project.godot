@@ -1,0 +1,8 @@
+; Isolated FF-02 importer experiment. Assets are copied only into ignored local/.
+config_version=5
+
+[application]
+config/name="Fruit-Fly FF-02 import probe"
+
+[rendering]
+renderer/rendering_method="gl_compatibility"

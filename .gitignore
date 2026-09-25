@@ -1,6 +1,11 @@
 characters/local/**
 animations/local/**
 configs/local/**
+# Asset archives and the FF-02 importer sandbox must never enter Git.
+/*.zip
+/model-inventory.json
+apps/avatar-renderer/probes/godot-ff02/local/**
+apps/avatar-renderer/probes/godot-ff02/.godot/**
 *.fbx
 *.vrm
 *.vrma
