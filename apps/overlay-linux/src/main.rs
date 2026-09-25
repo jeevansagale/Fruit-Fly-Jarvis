@@ -9,7 +9,7 @@ fn main() {
     // GTK normally terminates on SIGINT, but the explicit handler makes the
     // development spike deterministic and gives us a clean shutdown path for
     // the eventual renderer/native overlay process.
-    let signals = Signals::new([SIGINT]).expect("failed to install SIGINT handler");
+    let mut signals = Signals::new([SIGINT]).expect("failed to install SIGINT handler");
     thread::spawn(move || {
         if signals.forever().next().is_some() {
             eprintln!("Fruit-Fly: received Ctrl+C (SIGINT), shutting down.");
