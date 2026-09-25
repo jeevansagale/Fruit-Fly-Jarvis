@@ -1,0 +1,7 @@
+{
+  "name": "fruit-fly",
+  "private": true,
+  "version": "0.1.0",
+  "description": "3D AI desktop companion infrastructure",
+  "workspaces": ["apps/*", "packages/*"]
+}

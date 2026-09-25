@@ -1,0 +1,7 @@
+platform: linux-wayland
+compositor: hyprland
+renderer: pending
+voice: local-first
+vision: disabled
+computer_control: disabled
+memory: sqlite

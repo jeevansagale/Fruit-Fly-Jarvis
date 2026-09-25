@@ -1,0 +1,18 @@
+id: character-id
+display_name: Character
+model:
+  format: vrm
+  path: local/model.vrm
+personality:
+  confidence: 0.5
+  teasing: 0.5
+  patience: 0.5
+  affection: 0.5
+  protectiveness: 0.5
+speech:
+  verbosity: medium
+  directness: medium
+  humor: dry
+behavior:
+  proactive_level: low
+  interruption_policy: conservative
