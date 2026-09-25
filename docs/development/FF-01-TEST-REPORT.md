@@ -1,6 +1,8 @@
 # FF-01 Test Report
 
-Status: **TARGET-MACHINE VALIDATION IN PROGRESS**
+Status: **PENDING — target-machine validation required**. The 2026-09-25 FF-02 sandbox has no Arch/Hyprland/Wayland/NVIDIA display or Rust toolchain. No FF-01 acceptance item was tested here.
+
+Code audit: the SIGINT listener in `apps/overlay-linux/src/main.rs` calls `std::process::exit(0)`. Exiting the process is not the same as graceful GTK/renderer cleanup. Verify `Ctrl+C` from the launching terminal on the actual machine; if the requirement is graceful shutdown, revise this handler in a separate FF-01 change after reproducing the issue.
 
 Run this on the actual Arch + Hyprland session. Record versions and mark every acceptance item PASS/FAIL.
 

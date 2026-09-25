@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "name": "fruit-fly-ff02-import-probe",
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Disposable browser-side FBX import experiment; not the Fruit-Fly runtime",
+  "dependencies": {
+    "three": "0.186.1"
+  }
+}
