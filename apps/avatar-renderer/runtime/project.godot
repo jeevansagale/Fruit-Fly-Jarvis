@@ -1,0 +1,22 @@
+; Fruit-Fly avatar runtime (Godot native). Model files are staged only into
+; ignored local/ — never commit them.
+config_version=5
+
+[application]
+config/name="Fruit-Fly"
+run/main_scene="res://main.tscn"
+
+[display]
+window/size/transparent=true
+window/size/resizable=true
+window/size/borderless=true
+window/size/always_on_top=true
+window/size/viewport_width=480
+window/size/viewport_height=800
+window/per_pixel_transparency/allowed=true
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+viewport/transparent_background=true
+environment/defaults/default_clear_color=Color(0, 0, 0, 0)

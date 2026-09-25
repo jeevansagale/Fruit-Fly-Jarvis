@@ -1,10 +1,10 @@
-id: character-id
-display_name: Character
+id: columbina
+display_name: Columbina
 model:
-  format: vrm
-  path: local/model.vrm
+  format: fbx
+  path: local/columbina/source/model.fbx
 textures:
-  directory: local/textures
+  directory: local/columbina/textures
 animations:
   idle: null
   talking: null
@@ -20,14 +20,14 @@ look_at:
 procedural_idle:
   breath_amplitude: 0.02
   sway_amplitude: 0.03
-  breath_rate_hz: 0.25
+  breath_rate_hz: 0.22
 personality:
-  archetype: neutral
-  confidence: 0.5
-  teasing: 0.5
-  patience: 0.5
+  archetype: enigmatic
+  confidence: 0.8
+  teasing: 0.7
+  patience: 0.6
   affection: 0.5
-  protectiveness: 0.5
+  protectiveness: 0.4
 speech:
   verbosity: medium
   directness: medium
